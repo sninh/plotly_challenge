@@ -1,42 +1,88 @@
-// Use d3.json() to fetch data from JSON file
-// Incoming data is internally referred to as incomingData
-d3.json("data/data.json").then((incomingData) => {
-    function filterMovieRatings(movie) {
-      return movie.imdbRating > 8.9;
-    }
-  
-    // Use filter() to pass the function as its argument
-    var filteredMovies = incomingData.filter(filterMovieRatings);
-  
-    //  Check to make sure your are filtering your movies.
-    console.log(filteredMovies);
-  
-    // Use the map method with the arrow function to return all the filtered movie titles.
-    var titles = filteredMovies.map(movies =>  movies.title);
-  
-    // Use the map method with the arrow function to return all the filtered movie metascores.
-    var ratings = filteredMovies.map(movies => movies.metascore);
-  
-    // Check your filtered metascores.
-    console.log(ratings);
-  
-    // Create your trace.
-    var trace = {
-      x: titles,
-      y: ratings,
-      type: "bar"
-    };
-  
-    // Create the data array for our plot
-    var data = [trace];
-  
-    // Define the plot layout
-    var layout = {
-      title: "The highest critically acclaimed movies.",
-      xaxis: { title: "Title" },
-      yaxis: { title: "Metascore (Critic) Rating"}
-    };
-  
-    // Plot the chart to a div tag with id "bar-plot"
-    Plotly.newPlot("bar-plot", data, layout);
-  });
+// Use D3 fetch to read the JSON file
+// The data from the JSON file is arbitrarily named importedData as the argument
+d3.json("data/samples.json").then((importedData) => {
+
+	console.log(importedData);
+
+	var data = importedData;
+
+
+	var names = data.names;
+
+	names.forEach((name) => {
+		d3.select("#selDataset").append("option").text(name);
+	})
+
+
+	function init() {
+
+		// Choose data for test ID No. 940 plotted as default
+		DataSet = data.samples.filter(sample => sample.id === "940")[0];
+		console.log(DataSet);
+
+		// Select all sample_values, otu_ids and otu_labels of the selected test ID
+		sample_values = DataSet.sample_values;
+		otu_ids = DataSet.otu_ids;
+		otu_labels = DataSet.otu_labels;
+
+
+
+    //Create a horizontal bar chart with a dropdown menu to display the top 10 OTUs found in that individual.
+		var trace1 = {
+			x:ten,
+			y: ten_otu_ids.map(outId => `OTU ${outId}`),
+			text: ten_otu_labels,
+			type: "bar",
+			orientation: "h"
+		};
+
+		
+		var barData = [trace1];
+
+		
+		var barlayout = {
+			title: `<b>Top 10 OTUs found in selected Test Subject ID No<b>`,
+			xaxis: { title: "Sample Value"},
+			yaxis: { title: "OTU ID"},
+			autosize: false,
+			width: 450,
+			height: 600
+		}
+
+		
+		Plotly.newPlot("bar", barData, barlayout);
+
+		// Create a bubble chart that displays each sample.
+		var trace2 = {
+			x: otu_ids,
+			y: sample_values,
+			text: allten_otu_labels,
+			mode: 'markers',
+			marker: {
+				color: otu_ids,
+				size: sample_values
+			}
+		};
+		
+		var bubbleData = [trace2];
+		
+		var bubbleLayout = {
+			title: '<b>Bubble Chart displaying sample values of OTU IDs of the selected individual<b>',
+			xaxis: { title: "OTU ID"},
+			yaxis: { title: "Sample Value"}, 
+			showlegend: false,
+		};
+		
+		Plotly.newPlot('bubble', bubbleData, bubbleLayout);
+
+		// Display the sample metadata, i.e., an individual's demographic information.
+		demoDefault = data.metadata.filter(sample => sample.id === 940)[0];
+		console.log(demoDefault);
+
+		// Display each key-value pair from the metadata JSON object somewhere on the page.
+		Object.entries(demoDefault).forEach(
+			([key, value]) => d3.select("#sample-metadata")
+													.append("p").text(`${key.toUpperCase()}: ${value}`));
+
+	}
+});
